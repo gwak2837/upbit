@@ -3,7 +3,7 @@ import { logWriter } from '../lib/writer'
 import { printNow } from '../utils/date'
 import { createToken, rateLimit, type UpbitError } from './common'
 
-type Asset = {
+export type Asset = {
   avg_buy_price: string
   avg_buy_price_modified: boolean
   balance: string

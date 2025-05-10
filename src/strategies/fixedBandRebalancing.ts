@@ -1,7 +1,7 @@
 import { MINIMUM_REBALANCING_AMOUNT } from '../constants/config'
 import { NODE_ENV } from '../constants/env'
-import { getAssets } from '../upbit/asset'
-import { getLastestMinuteCandle } from '../upbit/candle'
+import { type Asset, getAssets } from '../upbit/asset'
+import { type Candle, getLastestMinuteCandle } from '../upbit/candle'
 import { buyLimit, cancelOrder, getOrders, sellLimit } from '../upbit/order'
 import { addDecimal8 } from '../upbit/utils'
 import { isDefined } from '../utils/type'
@@ -27,28 +27,9 @@ const portfolio = [
 
 export async function doFixedBandRebalancing() {
   const { assets, latestMinuteCandles } = await fetchData()
-
-  /* 자산 평가금액 계산하기 */
-  const krw = assets.find((a) => a.currency === 'KRW')
-  let krwBalance = krw ? Number(addDecimal8(krw.balance, krw.locked)) : 0
-  let totalValue = krwBalance
-
-  const prices: Record<string, number> = {}
-  const values: Record<string, number> = {}
-
-  for (const candle of latestMinuteCandles) {
-    if (candle) prices[candle.market] = candle.trade_price
-  }
-
-  for (const { currency, balance, locked } of assets) {
-    if (currency === 'KRW') continue
-    const market = `KRW-${currency}`
-    const price = prices[market]
-    if (price === undefined) continue
-    const value = Number(addDecimal8(balance, locked)) * price
-    values[market] = value
-    totalValue += value
-  }
+  const assetValues = calculateAssetValue({ assets, candles: latestMinuteCandles })
+  const { totalValue, prices, values } = assetValues
+  let krwBalance = assetValues.krwBalance
 
   if (NODE_ENV === 'development') {
     const tableRows = portfolio.map(({ market, ratio }) => {
@@ -115,6 +96,31 @@ export async function doFixedBandRebalancing() {
   }
 }
 
+function calculateAssetValue({ assets, candles }: { assets: Asset[]; candles: Candle[] }) {
+  const krw = assets.find((a) => a.currency === 'KRW')
+  const krwBalance = krw ? Number(addDecimal8(krw.balance, krw.locked)) : 0
+  let totalValue = krwBalance
+
+  const prices: Record<string, number> = {}
+  const values: Record<string, number> = {}
+
+  for (const candle of candles) {
+    if (candle) prices[candle.market] = candle.trade_price
+  }
+
+  for (const { currency, balance, locked } of assets) {
+    if (currency === 'KRW') continue
+    const market = `KRW-${currency}`
+    const price = prices[market]
+    if (price === undefined) continue
+    const value = Number(addDecimal8(balance, locked)) * price
+    values[market] = value
+    totalValue += value
+  }
+
+  return { krwBalance, totalValue, prices, values }
+}
+
 async function cancelPendingOrders() {
   const pendingOrderPromises = portfolio.map(({ market }) => getOrders({ market, state: 'wait', limit: 100, page: 1 }))
   const pendingOrders = await Promise.all(pendingOrderPromises)
@@ -136,5 +142,5 @@ async function fetchData() {
   if (!assets) throw new Error('자산 정보를 불러오지 못했습니다.')
   if (latestMinuteCandles.includes(null)) throw new Error('시세 정보를 불러오지 못했습니다.')
 
-  return { assets, latestMinuteCandles }
+  return { assets, latestMinuteCandles: latestMinuteCandles.filter(isDefined) }
 }

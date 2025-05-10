@@ -3,7 +3,7 @@ import { logWriter } from '../lib/writer'
 import { printNow } from '../utils/date'
 import { rateLimit, type UpbitError } from './common'
 
-type MinuteCandle = {
+export type Candle = {
   candle_acc_trade_price: number
   candle_acc_trade_volume: number
   candle_date_time_kst: string
@@ -30,7 +30,7 @@ export async function getLastestMinuteCandle({ market }: MinuteCandleInput) {
     return null
   }
 
-  const result = (await response.json()) as MinuteCandle[] | UpbitError
+  const result = (await response.json()) as Candle[] | UpbitError
 
   if ('error' in result) {
     logWriter.write(`${printNow()} getMinuteCandles, ${result.error}\n`)
