@@ -1,0 +1,37 @@
+{
+  "name": "upbit",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun tools/checkEnvVars.ts && bun --watch src/index.ts",
+    "build": "bun build --compile --minify --bytecode src/index.ts --outfile out/upbit.bun",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "async-sema": "^3.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.26.0",
+    "@eslint/json": "^0.12.0",
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.17",
+    "bun": "^1.2.12",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-perfectionist": "^4.12.3",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "3.5.3",
+    "typescript-eslint": "^8.32.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
