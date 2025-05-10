@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "bun tools/checkEnvVars.ts && bun --watch src/index.ts",
     "build": "bun build --compile --minify --bytecode src/index.ts --outfile out/upbit.bun",
+    "lint": "eslint .",
+    "prettier": "prettier . --write --log-level silent",
     "prepare": "husky"
   },
   "dependencies": {
     "async-sema": "^3.1.1",
+    "dotenv": "^16.5.0",
     "jsonwebtoken": "^9.0.2",
     "uuid": "^11.1.0"
   },
