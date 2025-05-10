@@ -127,30 +127,28 @@ export async function getOrders(body: GetOrdersBody) {
 export async function orderCoin(body: OrderCoinBody) {
   await rateLimit()
 
-  return console.log('👀 - body:', body)
+  const response = await fetch(`${UPBIT_API_URL}/v1/orders`, {
+    body: JSON.stringify(body),
+    headers: {
+      Authorization: `Bearer ${createToken(encode(body))}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+  })
 
-  // const response = await fetch(`${UPBIT_API_URL}/v1/orders`, {
-  //   body: JSON.stringify(body),
-  //   headers: {
-  //     Authorization: `Bearer ${createToken(encode(body))}`,
-  //     'Content-Type': 'application/json',
-  //   },
-  //   method: 'POST',
-  // })
+  if (!response.ok) {
+    logWriter.write(`${printNow()} orderCoin, ${JSON.stringify(body)}, ${await response.text()}\n`)
+    return null
+  }
 
-  // if (!response.ok) {
-  //   logWriter.write(`${printNow()} orderCoin, ${JSON.stringify(body)}, ${await response.text()}\n`)
-  //   return null
-  // }
+  const result = (await response.json()) as UpbitError | UpbitOrder
 
-  // const result = (await response.json()) as UpbitError | UpbitOrder
+  if ('error' in result) {
+    logWriter.write(`${printNow()} orderCoin, ${JSON.stringify(body)}, ${result.error}\n`)
+    return null
+  }
 
-  // if ('error' in result) {
-  //   logWriter.write(`${printNow()} orderCoin, ${JSON.stringify(body)}, ${result.error}\n`)
-  //   return null
-  // }
-
-  // return result
+  return result
 }
 
 export function sellLimit(market: string, volume: number, price: number) {

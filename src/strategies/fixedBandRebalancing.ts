@@ -67,7 +67,8 @@ export async function doFixedBandRebalancing() {
       continue
     }
 
-    const targetValue = (ratio / 100) * totalValue
+    const bandRatio = curRatio > upper ? upper : lower
+    const targetValue = (bandRatio / 100) * totalValue
     const diff = targetValue - curValue // +:매수 / -:매도
     const absDiff = Math.abs(diff)
 
