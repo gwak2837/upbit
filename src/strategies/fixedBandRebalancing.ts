@@ -10,17 +10,17 @@ const portfolio = [
   {
     market: 'KRW-BTC',
     ratio: 32,
-    threshold: 2,
+    threshold: 1,
   },
   {
     market: 'KRW-SUI',
     ratio: 32,
-    threshold: 2,
+    threshold: 1,
   },
   {
     market: 'KRW-XRP',
     ratio: 32,
-    threshold: 2,
+    threshold: 1,
   },
   // 나머지 비중은 현금
 ]
@@ -73,7 +73,7 @@ export async function doFixedBandRebalancing() {
     const absDiff = Math.abs(diff)
 
     if (absDiff < MINIMUM_REBALANCING_AMOUNT) {
-      console.log(`[SKIP] ${market} 차액 ${absDiff.toFixed(0)} 원 < MIN`)
+      console.log(`[SKIP] ${market} 차액 ${absDiff.toFixed(0)} 원 (< MIN ${MINIMUM_REBALANCING_AMOUNT})`)
       continue
     }
 
@@ -87,12 +87,12 @@ export async function doFixedBandRebalancing() {
       }
       await buyLimit(market, diff, now)
       krwBalance -= diff
-      console.log(`[지정가 구매]  ${market}  ${diff.toFixed(0)} KRW`)
+      console.log(`[BUY]  ${market}  ${diff.toFixed(0)} KRW`)
     } else {
       const volume = absDiff / now
       await sellLimit(market, volume, now)
       krwBalance += absDiff
-      console.log(`[지정가 판매]  ${market}  ${volume.toFixed(8)}`)
+      console.log(`[SELL]  ${market}  ${volume.toFixed(8)}`)
     }
   }
 }
