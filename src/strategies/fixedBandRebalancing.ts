@@ -1,5 +1,4 @@
 import { MINIMUM_REBALANCING_AMOUNT } from '../constants/config'
-import { NODE_ENV } from '../constants/env'
 import { type Asset, getAssets } from '../upbit/asset'
 import { type Candle, getLastestMinuteCandle } from '../upbit/candle'
 import { buyLimit, cancelOrder, getOrders, sellLimit } from '../upbit/order'
@@ -9,23 +8,23 @@ import { isDefined } from '../utils/type'
 const portfolio = [
   {
     market: 'KRW-BTC',
-    ratio: 22,
-    threshold: 1,
+    ratio: 23,
+    threshold: 0.5,
   },
   {
     market: 'KRW-SUI',
-    ratio: 22,
-    threshold: 1,
+    ratio: 23,
+    threshold: 0.5,
   },
   {
     market: 'KRW-XRP',
-    ratio: 22,
-    threshold: 1,
+    ratio: 23,
+    threshold: 0.5,
   },
   {
     market: 'KRW-USDT',
-    ratio: 22,
-    threshold: 1,
+    ratio: 23,
+    threshold: 0.5,
   },
   // 나머지 비중은 현금
 ]
@@ -36,27 +35,32 @@ export async function doFixedBandRebalancing() {
   const { totalValue, prices, values } = assetValues
   let krwBalance = assetValues.krwBalance
 
-  if (NODE_ENV === 'development') {
-    const tableRows = portfolio.map(({ market, ratio }) => {
-      const value = values[market] ?? 0
-      return {
-        Market: market,
-        평가금액: value.toLocaleString(),
-        현재비중: totalValue ? `${((value / totalValue) * 100).toFixed(2)}%` : '-',
-        목표비중: `${ratio}%`,
-      }
-    })
-    tableRows.push(
-      {
-        Market: 'KRW',
-        평가금액: krwBalance.toLocaleString(),
-        현재비중: totalValue ? `${((krwBalance / totalValue) * 100).toFixed(2)}%` : '-',
-        목표비중: '-',
-      },
-      { Market: 'TOTAL', 평가금액: totalValue.toLocaleString(), 현재비중: '100%', 목표비중: '-' },
-    )
-    console.table(tableRows, ['Market', '평가금액', '현재비중', '목표비중'])
-  }
+  const tableRows = portfolio.map(({ market, ratio }) => {
+    const value = values[market] ?? 0
+    return {
+      Market: market,
+      평가금액: Math.floor(value).toLocaleString(),
+      현재비중: totalValue ? `${((value / totalValue) * 100).toFixed(2)}%` : '-',
+      목표비중: `${ratio}%`,
+    }
+  })
+
+  tableRows.push(
+    {
+      Market: 'KRW',
+      평가금액: Math.floor(krwBalance).toLocaleString(),
+      현재비중: totalValue ? `${((krwBalance / totalValue) * 100).toFixed(2)}%` : '-',
+      목표비중: '-',
+    },
+    {
+      Market: 'TOTAL',
+      평가금액: Math.floor(totalValue).toLocaleString(),
+      현재비중: '100%',
+      목표비중: '-',
+    },
+  )
+
+  console.table(tableRows, ['Market', '평가금액', '현재비중', '목표비중'])
 
   await cancelPendingOrders()
 
