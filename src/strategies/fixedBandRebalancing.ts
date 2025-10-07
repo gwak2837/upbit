@@ -9,17 +9,22 @@ import { isDefined } from '../utils/type'
 const portfolio = [
   {
     market: 'KRW-BTC',
-    ratio: 32,
+    ratio: 22,
     threshold: 1,
   },
   {
     market: 'KRW-SUI',
-    ratio: 32,
+    ratio: 22,
     threshold: 1,
   },
   {
     market: 'KRW-XRP',
-    ratio: 32,
+    ratio: 22,
+    threshold: 1,
+  },
+  {
+    market: 'KRW-USDT',
+    ratio: 22,
     threshold: 1,
   },
   // 나머지 비중은 현금
@@ -78,7 +83,10 @@ export async function doFixedBandRebalancing() {
     }
 
     const now = prices[market]
-    if (now === undefined) throw new Error(`시세 정보를 불러오지 못했습니다. ${market}`) // 발생할 수 없는 오류
+
+    if (now === undefined) {
+      throw new Error(`시세 정보를 불러오지 못했습니다. ${market}`) // 발생할 수 없는 오류
+    }
 
     if (diff > 0) {
       if (diff > krwBalance) {
